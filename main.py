@@ -22,7 +22,6 @@ import inventory
 device = inventory.BN
 
 def ncclient_connection(xml_data):
-
     with manager.connect(
         host=device["ip"],
         port="830",
@@ -39,14 +38,12 @@ def get_vrf_vlan_map():
     <filter>
         <vrf-oper-data xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-vrf-oper">
             <vrf-entry>
-                
             </vrf-entry>
         </vrf-oper-data>
     </filter>
     """
     
     netconf_reply = ncclient_connection(netconf_data)
-
     data_whole = json.loads(json.dumps(xmltodict.parse(netconf_reply.xml)))
     data = data_whole["rpc-reply"]['data']['vrf-oper-data']['vrf-entry']
 
@@ -58,7 +55,6 @@ def get_vrf_vlan_map():
 
 
 def get_ipv4_vlan_map():
-
     netconf_data = """
         <filter>
         <interfaces xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-interfaces-oper">
@@ -71,7 +67,6 @@ def get_ipv4_vlan_map():
     """
 
     netconf_reply = ncclient_connection(netconf_data)
-
     data_whole = json.loads(json.dumps(xmltodict.parse(netconf_reply.xml)))
     data = data_whole['rpc-reply']['data']['interfaces']['interface']
 
@@ -84,19 +79,22 @@ def get_ipv4_vlan_map():
 
 vrfs_ = get_vrf_vlan_map()
 ipv4_ = get_ipv4_vlan_map()
-
-pprint(ipv4_)
-vrf = {}
-
 list_ = vrfs_.items()
-print(list_)
- for i in range(0,len(ipv4)):
 
+final_output = {}
+for key,value in list_:
+    if value in ipv4_.keys():
+        final_output[key] = {
+            'vlan' : value,
+            'ipv4' : ipv4_[value]
+        }
+     
+pprint(final_output)
 
 
 #print(xml.dom.minidom.parseString(netconf_reply.xml).toprettyxml())
 
 
-# if __name__ == '__main__':
-    # pprint(get_vrf_vlan_map())
-    # pprint(get_ipv4_vlan_map())
+if __name__ == '__main__':
+    pprint(final_output)
+    
